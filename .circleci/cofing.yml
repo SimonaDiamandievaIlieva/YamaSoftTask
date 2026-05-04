@@ -1,0 +1,61 @@
+version: 2.1
+
+orbs:
+  slack: circleci/slack@4.12.1
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/openjdk:17.0
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - maven-cache-{{ checksum "pom.xml" }}
+
+      - run:
+          name: Build project
+          command: mvn clean compile
+
+      - run:
+          name: Run Smoke Tests
+          command: mvn test -DsuiteXmlFile=testng.xml -Dgroups=smoke
+
+      - store_test_results:
+          path: target/surefire-reports
+
+      - store_artifacts:
+          path: reports
+          destination: extent-reports
+
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: surefire-reports
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: maven-cache-{{ checksum "pom.xml" }}
+
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
+
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+
+workflows:
+  version: 2
+
+  pr-workflow:
+    jobs:
+      - build-and-test:
+          filters:
+            branches:
+              ignore:
+                - main

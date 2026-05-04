@@ -1,0 +1,24 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Automation Suite">
+
+    <listeners>
+        <listener class-name="testComponents.TestListeners"/>
+    </listeners>
+
+    <test name="UI Tests">
+
+        <groups>
+            <run>
+                <include name="smoke"/>
+            </run>
+        </groups>
+
+        <classes>
+            <class name="tests.CreateNewTripTests"/>
+            <class name="tests.CreateTripValidationTests"/>
+        </classes>
+
+    </test>
+
+</suite>
